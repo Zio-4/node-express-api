@@ -1,7 +1,9 @@
 import express from 'express'
 import morgan from 'morgan'
+import itemRouter from './resources/item/item.router.js'
 
 const app = express()
+const router = express.Router()
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json()) // To parse the incoming requests with JSON payloads
@@ -11,14 +13,17 @@ const log = (req, res, next) => {
     console.log('logging')
     next()
 }
-app.use(log())
+app.use(log)
 
 let db = []
 
+router.get('/me', (req, res) => {
+    res.send({ me: 'hello' })
+})
 
-app.get('/', log, (req, res) => [
-    res.send({ message: 'Hello from Express'})
-])
+app.use('/api', router)
+
+app.use('/api/item', itemRouter)
 
 app.get('/message', [log, log], (req, res) => {
     res.send({db})
