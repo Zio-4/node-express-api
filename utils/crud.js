@@ -1,3 +1,4 @@
+
 export const getOne = model => async (req, res) => {
     const resourceId = req.params.id
     const userId = req.user._id

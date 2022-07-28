@@ -50,12 +50,26 @@ export const newToken = user => {
     }
   }
   
-//   export const protect = async (req, res, next) => {
-//     if (!req.body.headers || !req.body.headers.authorization.include('Bearer')) res.status(401).end()
 
-//     const user = await User.findOne({})
+export const protect = async (req, res, next) => {
+    if (!req.headers.authorization) res.status(401).end()
 
-//     await verifyToken(req.headers.authorization)
+    let token = req.headers.authorization.split('Bearer ')[1]
 
-//     next()
-//   }
+    if (!token) res.status(401).end()
+
+    try {
+        const payload = await verifyToken(token)
+        const user = await User.findById({_id: payload.id})
+        // mongoose model method, returns fields except for password
+            .select('-password')
+            // converts to json
+            .lean()
+            .exec()
+        req.user = user
+        next()
+    } catch (e) {
+        console.error(e)
+        res.status(401).end()
+    }
+  }

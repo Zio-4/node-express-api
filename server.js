@@ -1,46 +1,25 @@
 import express from 'express'
 import morgan from 'morgan'
 import itemRouter from './resources/item/item.router.js'
+import userRouter from './resources/user/user.router'
+import listRouter from './resources/list/list.router'
+import { signin, signup, protect } from './utils/auth.js'
 
 const app = express()
-const router = express.Router()
 
 app.use(express.urlencoded({extended: true}));
 app.use(express.json()) // To parse the incoming requests with JSON payloads
 app.use(morgan('dev'))
 
-const log = (req, res, next) => {
-    console.log('logging')
-    next()
-}
-app.use(log)
 
-let db = []
+app.post('/signup', signup)
+app.post('/signin', signin)
 
-router.get('/me', (req, res) => {
-    res.send({ me: 'hello' })
-})
-
-app.use('/api', router)
-
+app.use('/api', protect)
 app.use('/api/item', itemRouter)
+app.use('/api/user', userRouter)
+app.use('/api/list', listRouter)
 
-app.get('/message', [log, log], (req, res) => {
-    res.send({db})
-})
-
-app.delete('/message', (req, res) => {
-    console.log('db before', db)
-    db = db.filter(m => m.text !== req.body.text)
-    console.log('db after', db)
-    res.send({ message: 'Successfully deleted'})
-})
-
-app.post('/', (req, res) => {
-    console.log('request body: ', req.body)
-    db.push(req.body)
-    res.send({ message: 'message created'})
-})
 
 export const start = () => {
     app.listen(3000, () => {
